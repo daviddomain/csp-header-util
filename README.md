@@ -1,36 +1,36 @@
 # csp-header-util
 
-Kleine lokale Utility zum Parsen, Bearbeiten und Zusammenführen von **Content-Security-Policy**-Headern.
+Small local utility to parse, edit, and merge **Content-Security-Policy** headers.
 
-## Was die App macht
+## What this app does
 
-Die Anwendung besteht aus einer einzelnen Datei: **`index.html`**.
-Sie läuft komplett lokal im Browser (auch direkt über `file://`, ohne Dev-Server, ohne Build-Step, ohne Framework, ohne externe Libraries).
+The app is a single file: **`index.html`**.
+It runs fully local in the browser (including directly via `file://`, with no dev server, no build step, no framework, and no external libraries).
 
-Funktionen:
+Features:
 
-- Zwei Eingabefelder für **CSP A** und **CSP B**
-- Akzeptiert entweder
-  - eine komplette Header-Zeile wie
+- Two input fields for **CSP A** and **CSP B**
+- Accepts either:
+  - a full header line like
     `Header set Content-Security-Policy "..."`
-  - oder einen reinen CSP-String
-- Button **„Analysieren“**:
-  - nur ein Feld befüllt → diese eine CSP wird geparst
-  - beide Felder befüllt → beide CSPs werden gemerged
-- Direktiven mit gleichem Namen werden zusammengeführt
-- Einträge innerhalb einer Direktive werden dedupliziert (Reihenfolge bleibt möglichst erhalten)
-- Gefundene Direktiven werden übersichtlich angezeigt
-- Einträge können pro Direktive entfernt werden
-- Neue Einträge können pro Direktive hinzugefügt werden
-- Ausgabe wird bei jeder Änderung sofort neu generiert:
-  - reiner CSP-String
-  - vollständige `.htaccess`-Header-Zeile
-- Für beide Ausgaben gibt es einen **Kopieren**-Button
+  - or a raw CSP string
+- **Analyze** button:
+  - only one field filled → parses that single CSP
+  - both fields filled → merges both CSPs
+- Directives with the same name are merged
+- Entries inside each directive are deduplicated (while keeping order as stable as possible)
+- Parsed directives are shown in a clear list
+- Entries can be removed per directive
+- New entries can be added per directive
+- Output is regenerated immediately after every change:
+  - raw CSP string
+  - full `.htaccess` header line
+- Both outputs include a **Copy** button
 
-## Nutzung
+## Usage
 
-1. `index.html` im Browser öffnen
-2. CSP in Feld A und optional Feld B einfügen
-3. **Analysieren** klicken
-4. Einträge bearbeiten (entfernen/hinzufügen)
-5. Ergebnis kopieren
+1. Open `index.html` in your browser
+2. Paste CSP into field A and optionally field B
+3. Click **Analyze**
+4. Edit entries (remove/add)
+5. Copy the generated result

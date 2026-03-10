@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -193,49 +193,49 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>CSP Parser & Merge Utility (lokal)</h1>
+    <h1>CSP Parser & Merge Utility (local)</h1>
     <div class="hint">
-      Füge in <strong>CSP A</strong> und optional <strong>CSP B</strong> entweder eine komplette <code>Header set Content-Security-Policy "..."</code> Zeile oder einen reinen CSP-String ein.
-      Danach <strong>Analysieren</strong> klicken.
+      Paste into <strong>CSP A</strong> and optionally <strong>CSP B</strong> either a full <code>Header set Content-Security-Policy "..."</code> line or a raw CSP string.
+      Then click <strong>Analyze</strong>.
     </div>
 
     <div class="panel">
       <div class="inputs">
         <div>
           <label for="inputA">CSP A</label>
-          <textarea id="inputA" placeholder="z. B. Header set Content-Security-Policy \"default-src 'self'; script-src 'self' https://example.com; img-src 'self' data:;\""></textarea>
+          <textarea id="inputA" placeholder="e.g. Header set Content-Security-Policy \"default-src 'self'; script-src 'self' https://example.com; img-src 'self' data:;\""></textarea>
         </div>
         <div>
           <label for="inputB">CSP B (optional)</label>
-          <textarea id="inputB" placeholder="z. B. default-src 'self'; script-src https://cdn.example.org; style-src 'self' 'unsafe-inline';"></textarea>
+          <textarea id="inputB" placeholder="e.g. default-src 'self'; script-src https://cdn.example.org; style-src 'self' 'unsafe-inline';"></textarea>
         </div>
       </div>
 
       <div class="actions">
-        <button class="btn-primary" id="analyzeBtn">Analysieren</button>
+        <button class="btn-primary" id="analyzeBtn">Analyze</button>
       </div>
       <div class="status" id="status"></div>
     </div>
 
     <div class="grid">
       <div class="panel">
-        <h2>Direktiven</h2>
-        <div id="directivesContainer" class="empty">Noch keine Analyse durchgeführt.</div>
+        <h2>Directives</h2>
+        <div id="directivesContainer" class="empty">No analysis yet.</div>
       </div>
 
       <div class="panel out-box">
-        <h2>Generierte Ausgabe</h2>
+        <h2>Generated output</h2>
 
-        <label for="outputCsp">Reiner CSP String</label>
+        <label for="outputCsp">Raw CSP string</label>
         <textarea id="outputCsp" readonly></textarea>
         <div class="actions">
-          <button id="copyCsp">CSP kopieren</button>
+          <button id="copyCsp">Copy CSP</button>
         </div>
 
-        <label for="outputHeader">.htaccess Header-Zeile</label>
+        <label for="outputHeader">.htaccess header line</label>
         <textarea id="outputHeader" readonly></textarea>
         <div class="actions">
-          <button id="copyHeader">Header kopieren</button>
+          <button id="copyHeader">Copy header</button>
         </div>
       </div>
     </div>
@@ -267,7 +267,7 @@
       if (!rawA && !rawB) {
         state.directives = [];
         renderAll();
-        setStatus('Bitte mindestens ein Feld befüllen.', true);
+        setStatus('Please fill at least one field.', true);
         return;
       }
 
@@ -280,23 +280,23 @@
       if (rawA && parsedA.length === 0 && (!rawB || parsedB.length === 0)) {
         state.directives = [];
         renderAll();
-        setStatus('Keine gültige CSP erkannt. Bitte Eingabe prüfen.', true);
+        setStatus('No valid CSP found. Please check your input.', true);
         return;
       }
 
       if (rawA && rawB) {
         state.directives = mergePolicies(parsedA, parsedB);
-        setStatus(`Merge durchgeführt: A (${parsedA.length} Direktiven) + B (${parsedB.length} Direktiven).`, false);
+        setStatus(`Merge completed: A (${parsedA.length} directives) + B (${parsedB.length} directives).`, false);
       } else if (rawA) {
         state.directives = parsedA;
-        setStatus(`Nur CSP A verwendet (${parsedA.length} Direktiven).`, false);
+        setStatus(`Using CSP A only (${parsedA.length} directives).`, false);
       } else {
         state.directives = parsedB;
-        setStatus(`Nur CSP B verwendet (${parsedB.length} Direktiven).`, false);
+        setStatus(`Using CSP B only (${parsedB.length} directives).`, false);
       }
 
       if (state.directives.length === 0) {
-        setStatus('Eingabe erkannt, aber keine verwertbaren Direktiven gefunden.', true);
+        setStatus('Input detected, but no usable directives were found.', true);
       }
 
       renderAll();
@@ -306,14 +306,14 @@
       if (!input) return '';
       const text = input.replace(/\r/g, '').trim();
 
-      // Falls komplette .htaccess Zeile: Versuche nach Content-Security-Policy zu extrahieren.
+      // If full .htaccess line: try extracting after Content-Security-Policy.
       const headerRegex = /content-security-policy(?:-report-only)?\b/i;
       if (headerRegex.test(text)) {
-        // 1) Quote-Variante: ... Content-Security-Policy "..."
+        // 1) Quoted variant: ... Content-Security-Policy "..."
         const quoted = text.match(/content-security-policy(?:-report-only)?\b[\s\t]+(["'])([\s\S]*?)\1/i);
         if (quoted && quoted[2]) return quoted[2].trim();
 
-        // 2) Fallback: Unquoted Rest nach dem Namen
+        // 2) Fallback: unquoted rest after policy name
         const restMatch = text.match(/content-security-policy(?:-report-only)?\b[\s\t]+([\s\S]+)/i);
         if (restMatch && restMatch[1]) {
           let rest = restMatch[1].trim();
@@ -323,7 +323,7 @@
         }
       }
 
-      // Sonst als rohen CSP String verwenden.
+      // Otherwise treat as raw CSP string.
       return text;
     }
 
@@ -359,7 +359,7 @@
           }
         }
 
-        // Valueless directives (z. B. upgrade-insecure-requests) bleiben erhalten.
+        // Valueless directives (e.g. upgrade-insecure-requests) are preserved.
       }
 
       return out;
@@ -404,7 +404,7 @@
 
       directive.entries.splice(entryIndex, 1);
 
-      // Wenn keine Einträge mehr vorhanden sind, Direktive entfernen.
+      // If no entries remain, remove the directive.
       if (directive.entries.length === 0) {
         state.directives.splice(dirIndex, 1);
       }
@@ -444,7 +444,7 @@
 
       if (!state.directives.length) {
         directivesContainer.className = 'empty';
-        directivesContainer.textContent = 'Keine Direktiven vorhanden.';
+        directivesContainer.textContent = 'No directives available.';
         return;
       }
 
@@ -464,7 +464,7 @@
         if (!directive.entries.length) {
           const noEntries = document.createElement('div');
           noEntries.className = 'empty';
-          noEntries.textContent = 'Keine Einträge';
+          noEntries.textContent = 'No entries';
           entriesWrap.appendChild(noEntries);
         } else {
           directive.entries.forEach((entry, entryIndex) => {
@@ -477,7 +477,7 @@
 
             const btn = document.createElement('button');
             btn.className = 'btn-danger';
-            btn.textContent = 'Entfernen';
+            btn.textContent = 'Remove';
             btn.addEventListener('click', () => removeEntry(dirIndex, entryIndex));
 
             row.appendChild(text);
@@ -493,7 +493,7 @@
 
         const input = document.createElement('input');
         input.type = 'text';
-        input.placeholder = "Neuen Eintrag hinzufügen (z. B. https://cdn.example.com oder 'self')";
+        input.placeholder = "Add a new entry (e.g. https://cdn.example.com or 'self')";
         input.addEventListener('keydown', (event) => {
           if (event.key === 'Enter') {
             event.preventDefault();
@@ -502,7 +502,7 @@
         });
 
         const addBtn = document.createElement('button');
-        addBtn.textContent = 'Hinzufügen';
+        addBtn.textContent = 'Add';
         addBtn.addEventListener('click', () => addEntry(dirIndex, input));
 
         addRow.appendChild(input);
@@ -523,13 +523,13 @@
         } else {
           fallbackCopy(text);
         }
-        btn.textContent = 'Kopiert!';
+        btn.textContent = 'Copied!';
       } catch (_) {
         try {
           fallbackCopy(text);
-          btn.textContent = 'Kopiert!';
+          btn.textContent = 'Copied!';
         } catch {
-          btn.textContent = 'Kopieren fehlgeschlagen';
+          btn.textContent = 'Copy failed';
         }
       }
 
@@ -550,7 +550,7 @@
       document.body.removeChild(temp);
     }
 
-    // Startzustand
+    // Initial state
     renderAll();
   </script>
 </body>

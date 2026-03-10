@@ -178,6 +178,24 @@
       min-height: 130px;
     }
 
+    .mode-toggle {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin: 8px 0 12px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .mode-toggle label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
     .empty {
       color: var(--muted);
       font-style: italic;
@@ -226,16 +244,27 @@
       <div class="panel out-box">
         <h2>Generated output</h2>
 
+        <div class="mode-toggle" role="group" aria-label="CSP mode">
+          <label><input type="radio" name="cspMode" value="enforce" checked /> Enforce</label>
+          <label><input type="radio" name="cspMode" value="report-only" /> Report-Only</label>
+        </div>
+
         <label for="outputCsp">Raw CSP string</label>
         <textarea id="outputCsp" readonly></textarea>
         <div class="actions">
           <button id="copyCsp">Copy CSP</button>
         </div>
 
+        <label for="outputNginx">Nginx header line</label>
+        <textarea id="outputNginx" readonly></textarea>
+        <div class="actions">
+          <button id="copyNginx">Copy Nginx</button>
+        </div>
+
         <label for="outputHeader">.htaccess header line</label>
         <textarea id="outputHeader" readonly></textarea>
         <div class="actions">
-          <button id="copyHeader">Copy header</button>
+          <button id="copyHeader">Copy Apache</button>
         </div>
       </div>
     </div>
@@ -252,12 +281,17 @@
     const statusEl = document.getElementById('status');
     const directivesContainer = document.getElementById('directivesContainer');
     const outputCsp = document.getElementById('outputCsp');
+    const outputNginx = document.getElementById('outputNginx');
     const outputHeader = document.getElementById('outputHeader');
     const copyCspBtn = document.getElementById('copyCsp');
+    const copyNginxBtn = document.getElementById('copyNginx');
     const copyHeaderBtn = document.getElementById('copyHeader');
+    const cspModeInputs = document.querySelectorAll('input[name="cspMode"]');
 
     analyzeBtn.addEventListener('click', handleAnalyze);
+    cspModeInputs.forEach(input => input.addEventListener('change', renderAll));
     copyCspBtn.addEventListener('click', () => copyText(outputCsp.value, copyCspBtn));
+    copyNginxBtn.addEventListener('click', () => copyText(outputNginx.value, copyNginxBtn));
     copyHeaderBtn.addEventListener('click', () => copyText(outputHeader.value, copyHeaderBtn));
 
     function handleAnalyze() {
@@ -393,9 +427,21 @@
         .join('; ');
     }
 
-    function buildHeaderString(csp) {
+    function getSelectedHeaderName() {
+      const selected = document.querySelector('input[name="cspMode"]:checked');
+      return selected && selected.value === 'report-only'
+        ? 'Content-Security-Policy-Report-Only'
+        : 'Content-Security-Policy';
+    }
+
+    function buildApacheHeaderString(csp, headerName) {
       const escaped = csp.replace(/"/g, '\\"');
-      return `Header set Content-Security-Policy "${escaped}"`;
+      return `Header set ${headerName} "${escaped}"`;
+    }
+
+    function buildNginxHeaderString(csp, headerName) {
+      const escaped = csp.replace(/"/g, '\\"');
+      return `add_header ${headerName} "${escaped}" always;`;
     }
 
     function removeEntry(dirIndex, entryIndex) {
@@ -435,8 +481,10 @@
     function renderAll() {
       renderDirectives();
       const csp = buildCspString();
+      const headerName = getSelectedHeaderName();
       outputCsp.value = csp;
-      outputHeader.value = csp ? buildHeaderString(csp) : '';
+      outputNginx.value = csp ? buildNginxHeaderString(csp, headerName) : '';
+      outputHeader.value = csp ? buildApacheHeaderString(csp, headerName) : '';
     }
 
     function renderDirectives() {

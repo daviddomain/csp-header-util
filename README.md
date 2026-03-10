@@ -1,5 +1,7 @@
 # csp-header-util
 
+🚀 **Live demo:** https://daviddomain.github.io/csp-header-util/
+
 Small local utility to parse, edit, and merge **Content-Security-Policy** headers.
 
 ## What this app does

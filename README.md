@@ -23,6 +23,7 @@ Features:
 - Entries inside each directive are deduplicated (while keeping order as stable as possible)
 - Parsed directives are shown in a clear list
 - Directives can be collapsed and expanded
+- Entries can be copied per directive
 - Entries can be removed per directive
 - New entries can be added per directive
 - Output is regenerated immediately after every change:

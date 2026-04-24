@@ -201,6 +201,12 @@
       margin-right: 8px;
     }
 
+    .entry-actions {
+      display: flex;
+      gap: 6px;
+      flex: 0 0 auto;
+    }
+
     .add-row {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -590,13 +596,24 @@
             text.className = 'entry-text';
             text.textContent = entry;
 
+            const actions = document.createElement('div');
+            actions.className = 'entry-actions';
+
+            const copyBtn = document.createElement('button');
+            copyBtn.type = 'button';
+            copyBtn.textContent = 'Copy';
+            copyBtn.addEventListener('click', () => copyText(entry, copyBtn));
+
             const btn = document.createElement('button');
+            btn.type = 'button';
             btn.className = 'btn-danger';
             btn.textContent = 'Remove';
             btn.addEventListener('click', () => removeEntry(dirIndex, entryIndex));
 
+            actions.appendChild(copyBtn);
+            actions.appendChild(btn);
             row.appendChild(text);
-            row.appendChild(btn);
+            row.appendChild(actions);
             entriesWrap.appendChild(row);
           });
         }

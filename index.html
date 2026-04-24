@@ -134,11 +134,44 @@
       background: #0b1220;
     }
 
-    .directive h3 {
-      margin: 0 0 10px;
+    .directive-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .directive-header h3 {
+      margin: 0;
       font-size: 1rem;
       color: #bfdbfe;
       word-break: break-word;
+    }
+
+    .directive-toggle {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border-color: var(--border);
+      background: #111a2c;
+    }
+
+    .directive-toggle::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid #bfdbfe;
+      border-left: 2px solid #bfdbfe;
+      transform: rotate(45deg) translate(1px, 1px);
+    }
+
+    .directive-toggle[aria-expanded="false"]::before {
+      transform: rotate(225deg) translate(1px, 1px);
     }
 
     .entries {
@@ -272,7 +305,8 @@
 
   <script>
     const state = {
-      directives: [] // [{ name: string, entries: string[] }]
+      directives: [], // [{ name: string, entries: string[] }]
+      collapsedDirectives: new Set()
     };
 
     const analyzeBtn = document.getElementById('analyzeBtn');
@@ -300,6 +334,7 @@
 
       if (!rawA && !rawB) {
         state.directives = [];
+        state.collapsedDirectives.clear();
         renderAll();
         setStatus('Please fill at least one field.', true);
         return;
@@ -313,6 +348,7 @@
 
       if (rawA && parsedA.length === 0 && (!rawB || parsedB.length === 0)) {
         state.directives = [];
+        state.collapsedDirectives.clear();
         renderAll();
         setStatus('No valid CSP found. Please check your input.', true);
         return;
@@ -328,6 +364,8 @@
         state.directives = parsedB;
         setStatus(`Using CSP B only (${parsedB.length} directives).`, false);
       }
+
+      state.collapsedDirectives.clear();
 
       if (state.directives.length === 0) {
         setStatus('Input detected, but no usable directives were found.', true);
@@ -473,6 +511,16 @@
       renderAll();
     }
 
+    function toggleDirective(name) {
+      if (state.collapsedDirectives.has(name)) {
+        state.collapsedDirectives.delete(name);
+      } else {
+        state.collapsedDirectives.add(name);
+      }
+
+      renderDirectives();
+    }
+
     function setStatus(message, isError) {
       statusEl.textContent = message || '';
       statusEl.style.color = isError ? '#fca5a5' : '#93c5fd';
@@ -502,9 +550,28 @@
         const box = document.createElement('div');
         box.className = 'directive';
 
+        const isExpanded = !state.collapsedDirectives.has(directive.name);
+        const header = document.createElement('div');
+        header.className = 'directive-header';
+
         const title = document.createElement('h3');
         title.textContent = directive.name;
-        box.appendChild(title);
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
+        toggleBtn.className = 'directive-toggle';
+        toggleBtn.setAttribute('aria-expanded', String(isExpanded));
+        toggleBtn.setAttribute('aria-label', isExpanded ? `Collapse ${directive.name}` : `Expand ${directive.name}`);
+        toggleBtn.title = isExpanded ? 'Collapse directive' : 'Expand directive';
+        toggleBtn.addEventListener('click', () => toggleDirective(directive.name));
+
+        header.appendChild(title);
+        header.appendChild(toggleBtn);
+        box.appendChild(header);
+
+        const body = document.createElement('div');
+        body.className = 'directive-body';
+        body.hidden = !isExpanded;
 
         const entriesWrap = document.createElement('div');
         entriesWrap.className = 'entries';
@@ -534,7 +601,7 @@
           });
         }
 
-        box.appendChild(entriesWrap);
+        body.appendChild(entriesWrap);
 
         const addRow = document.createElement('div');
         addRow.className = 'add-row';
@@ -556,7 +623,8 @@
         addRow.appendChild(input);
         addRow.appendChild(addBtn);
 
-        box.appendChild(addRow);
+        body.appendChild(addRow);
+        box.appendChild(body);
         directivesContainer.appendChild(box);
       });
     }
